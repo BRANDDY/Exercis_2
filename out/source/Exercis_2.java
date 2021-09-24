@@ -16,16 +16,17 @@ import java.io.IOException;
 public class Exercis_2 extends PApplet {
 
 PImage bg;
-int maxN=10;//the max at once
-Mover[] movesL1;
+int maxN = 10;//the max at once
+Mover[][] moves;
+/*Mover[] movesL1;
 Mover[] movesL2;
 Mover[] movesR1;
-Mover[] movesR2;
+Mover[] movesR2;*/
 //Mover move;
 
  public void setup() {
     /* size commented out by preprocessor */;
-    bg=loadImage("bg.png");
+    bg = loadImage("bg.png");
     background(bg);
     //////////////////////////////
     setstart();
@@ -36,34 +37,31 @@ Mover[] movesR2;
     updateMover();
 }
 
- public void mousePressed(){
+ public void mousePressed() {
     textSize(20);
-    text(mouseX, mouseX, mouseY+20);
-    text(mouseY, mouseX+40, mouseY+20);
+    text(mouseX, mouseX, mouseY + 20);
+    text(mouseY, mouseX + 40, mouseY + 20);
 }
 
- public void setstart(){
-    movesL1 = new Mover[maxN];
-    movesL2 = new Mover[maxN];
-    movesR1 = new Mover[maxN];
-    movesR2 = new Mover[maxN];
-    movesL1[0]=new Mover(0,PApplet.parseInt(random(-50,0)),110);
-    movesL2[0]=new Mover(0,PApplet.parseInt(random(-50,0)),130);
-    movesR1[0]=new Mover(1,PApplet.parseInt(random(250,300)),170);
-    movesR2[0]=new Mover(1,PApplet.parseInt(random(250,300)),190);
-    for(int i=1;i<maxN;i++){
-        movesL1[i]=new Mover(0,PApplet.parseInt(movesL1[i-1].loc.x),110);
-        movesL2[i]=new Mover(0,PApplet.parseInt(movesL2[i-1].loc.x),130);
-        movesR1[i]=new Mover(1,PApplet.parseInt(movesR1[i-1].loc.x),170);
-        movesR2[i]=new Mover(1,PApplet.parseInt(movesR1[i-1].loc.x),190);
+ public void setstart() {
+    moves = new Mover[4][maxN];
+    
+    for (int i = 0;i < 4;i++) {
+        if (i ==  0 ||  i ==  1) {
+            moves[i][0] = new Mover(i,PApplet.parseInt(random( -50,0)));
+        } else if (i ==  2 ||  i ==  3) {
+            moves[i][0] = new Mover(i,PApplet.parseInt(random(250,300)));
+        }
+        for (int t = 1;t < maxN;t++) {
+            moves[i][t] = new Mover(i,PApplet.parseInt(moves[i][t - 1].loc.x));
+        }
     }
 }
- public void updateMover(){
-    for(int i=0;i<maxN;i++){
-        movesL1[i].update(i,movesL1);
-        movesL2[i].update(i,movesL2);
-        movesR1[i].update(i,movesR1);
-        movesR2[i].update(i,movesR2);
+ public void updateMover() {
+    for (int i = 0;i < 4;i++) {
+        for (int t = 0;t < maxN;t++) {
+            moves[i][t].update(i,t,moves);
+        }
     }
 }
 /*
@@ -79,48 +77,54 @@ int b2=348;
 
 class Mover {
     int dir;//l-0 r-1 f-2 b-3
+    int locY;
     PImage img;
     PVector loc;
     int speed;
     
-    Mover(int d,int l,int locY) {
-        dir = d;
-        switch(d) {
-            case 0 : speed = 1;break;
-            case 1 : speed = -1;break;
-        }
-        loc = new PVector(speed*PApplet.parseInt(random(50,100))+ l,locY);
-        println(loc.x);
+    Mover(int line,int l) {
+        setloc(line);
+        loc = new PVector(speed * PApplet.parseInt(random(50,100)) + l,locY);
         setImg();
     }
     
-     public void update(int i,Mover[] a) {
+     public void update(int i,int t,Mover[][] a) {
         image(img, loc.x,loc.y);
         loc.x -= speed;
-        reset(a,i);
+        reset(a,i,t);
     }
     
      public void setImg() {
         int n = PApplet.parseInt(random(0,3));
-            for (int i = 0;i < 3;i++) {
-                for (int t = 0;t < 4;t++) {
-                    if ((n == i) && (dir ==  t)) {
-                        img = loadImage("car" + i + "-" + t + ".png"); break;
+        for (int i = 0;i < 3;i++) {
+            for (int t = 0;t < 4;t++) {
+                if ((n == i) && (dir ==  t)) {
+                    img = loadImage("car" + i + "-" + t + ".png"); break;
                 }
             }      
         }
     }
     
-     public void reset(Mover[] a,int i) {
+     public void setloc(int line) {
+        switch(line) {
+            case 0 : dir = 0; speed = 1; locY = 110;break;
+            case 1 : dir = 0; speed = 1; locY = 130;break;
+            case 2 : dir = 1; speed = -1; locY = 170;break;
+            case 3 : dir = 1; speed = -1; locY = 190;break;
+        }
+    }
+    
+     public void reset(Mover[][] a,int i,int t) {
         if ((loc.x < - 20 &&  dir == 0) ||  loc.x>500 &&  dir == 1) {
             setImg();
-            if (i ==  0) {
-                a[i].loc.x = a[maxN-1].loc.x + PApplet.parseInt(random(30,100))*speed;
+            if (t ==  0) {
+                a[i][t].loc.x = a[i][maxN - 1].loc.x + PApplet.parseInt(random(30,100)) * speed;
             } else{
-                a[i].loc.x = a[i - 1].loc.x + PApplet.parseInt(random(30,100))*speed;
+                a[i][t].loc.x = a[i][t - 1].loc.x + PApplet.parseInt(random(30,100)) * speed;
             }
+            
         }
-        loc.x = a[i].loc.x;
+        loc.x = a[i][t].loc.x;
     }
 }
 
