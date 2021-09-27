@@ -166,13 +166,7 @@ class Mover {
     
      public void setImg() {
         int n = PApplet.parseInt(random(0,3));
-        for (int i = 0;i < 3;i++) {
-            for (int t = 0;t < 4;t++) {
-                if ((n == i) && (dir ==  t)) {
-                    img = loadImage("car" + i + "-" + t + ".png"); break;
-                }
-            }      
-        }
+        img = loadImage("car" + n + "-" + dir + ".png"); 
     }
     
      public void setLoc(int line) {
